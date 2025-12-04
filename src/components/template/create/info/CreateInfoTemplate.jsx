@@ -14,6 +14,7 @@ import {
 } from "@vapor-ui/core";
 import { useDaumPostcodeScript } from "@/utils/usePostCodeScript";
 import ProgressBar from "@/components/ProgressBar";
+import { useRouter } from "next/navigation";
 
 export const CreateInfoTemplate = () => {
   const [storeName, setStoreName] = useState("");
@@ -22,6 +23,7 @@ export const CreateInfoTemplate = () => {
   const [addressError, setAddressError] = useState("");
   const [storeNameError, setStoreNameError] = useState("");
   const scriptLoaded = useDaumPostcodeScript();
+  const router = useRouter();
 
   const handlePostCodeComplete = useCallback((data) => {
     const fullAddress = data.address;
@@ -47,8 +49,6 @@ export const CreateInfoTemplate = () => {
   };
 
   const handleNextClick = () => {
-    console.log("handleNextClick called");
-
     if (!address || address.trim() === "") {
       setAddressError("가게 주소를 입력해주세요.");
       return;
@@ -60,6 +60,7 @@ export const CreateInfoTemplate = () => {
     }
 
     console.log("next Success");
+    router.push("/spot/create/question");
   };
 
   // ref 콜백: DOM 요소가 마운트될 때 우편번호 검색 UI 초기화
@@ -182,7 +183,7 @@ export const CreateInfoTemplate = () => {
           }}
         >
           <Button size="lg" width="100%" onClick={handleNextClick}>
-            다음
+            다음으로
           </Button>
         </Flex>
       </VStack>

@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Funnel, Step, useFunnel } from "@/components/Funnel";
+import { Step, useFunnel } from "@/components/Funnel";
 import { Flex, Text, VStack } from "@vapor-ui/core";
 import { QuestionForm } from "./QuestionForm";
 import ProgressBar from "@/components/ProgressBar";
+import { useRouter } from "next/navigation";
 
 // 질문 생성 단계 정의 📝
 const STEPS = ["first", "second", "third"];
@@ -13,6 +14,7 @@ export const CreateQuestionTemplate = () => {
   // Funnel 훅 사용 - 단계 관리 🎣
   const [FunnelComponent, setStep] = useFunnel(STEPS, "first");
 
+  const router = useRouter();
   // 현재 단계 추적을 위한 상태 (예시용) 📊
   const [currentStep, setCurrentStep] = useState("first");
 
@@ -33,6 +35,8 @@ export const CreateQuestionTemplate = () => {
       const prevStep = STEPS[currentIndex - 1];
       setStep(prevStep);
       setCurrentStep(prevStep);
+    } else {
+      router.back();
     }
   };
 

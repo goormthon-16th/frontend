@@ -184,10 +184,10 @@ export const QuestionForm = ({ onClickPrev, onClickNext, text1, text2 }) => {
           }}
         >
           <Button variant="outline" width="50%" onClick={onClickPrev}>
-            이전
+            이전으로
           </Button>
           <Button width="50%" onClick={onClickNext}>
-            다음
+            다음으로
           </Button>
         </HStack>
       </Flex>
