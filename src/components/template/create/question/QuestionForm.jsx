@@ -9,6 +9,8 @@ import {
   VStack,
   Textarea,
 } from "@vapor-ui/core";
+import useImageUploadWithContext from "@/hooks/useImageUploadWithContext";
+import { useSpotCreate } from "@/contexts/SpotCreateContext";
 
 export const QuestionForm = ({
   onClickPrev,
@@ -16,14 +18,29 @@ export const QuestionForm = ({
   text1,
   text2,
   index = 0,
+  step = 1, // 현재 단계 (1, 2, 3)
 }) => {
   // 📸 이미지 파일과 미리보기 URL 상태 관리
-  const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
 
+  // 🎯 Context에서 상태 가져오기
+  const context = useSpotCreate();
+  const textValue =
+    step === 1 ? context.text1 : step === 2 ? context.text2 : context.text3;
+  const setText =
+    step === 1
+      ? context.setText1
+      : step === 2
+      ? context.setText2
+      : context.setText3;
+
+  // 🖼️ 이미지 업로드 훅 (Context와 통합)
+  const { handleImageUpload, isLoading, error } =
+    useImageUploadWithContext(step);
+
   // 📂 파일 선택 핸들러
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -33,20 +50,33 @@ export const QuestionForm = ({
       return;
     }
 
-    setSelectedImage(file);
-
     // 미리보기 URL 생성 🖼️
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviewUrl(reader.result);
     };
     reader.readAsDataURL(file);
+
+    // 📤 S3에 이미지 업로드 및 Context 저장
+    try {
+      await handleImageUpload(file);
+    } catch (err) {
+      console.error("❌ 업로드 실패:", err);
+      alert("이미지 업로드에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   // 🗑️ 이미지 삭제 핸들러
   const handleRemoveImage = () => {
-    setSelectedImage(null);
     setPreviewUrl(null);
+    // Context에서도 삭제
+    if (step === 1) {
+      context.setImageUrl1("");
+    } else if (step === 2) {
+      context.setImageUrl2("");
+    } else if (step === 3) {
+      context.setImageUrl3("");
+    }
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -54,10 +84,11 @@ export const QuestionForm = ({
 
   // 📤 업로드 영역 클릭 핸들러
   const handleUploadClick = () => {
+    // 로딩 중에는 클릭 방지 🚫
+    if (isLoading) return;
     fileInputRef.current?.click();
   };
 
-  console.log("index", index);
   return (
     <VStack width="100%" height="100%" justifyContent="space-between">
       <Text typography="heading5">{text1}</Text>
@@ -72,6 +103,8 @@ export const QuestionForm = ({
           height={"134px"}
           placeholder="사장님의 이야기를 들려주세요"
           maxLength={200}
+          value={textValue}
+          onChange={(e) => setText(e.target.value)}
         />
         <InputGroup.Counter />
       </InputGroup.Root>
@@ -102,13 +135,21 @@ export const QuestionForm = ({
             alignItems: "center",
             justifyContent: "center",
             marginTop: "8px",
-            cursor: "pointer",
+            cursor: isLoading ? "not-allowed" : "pointer",
             position: "relative",
             overflow: "hidden",
             backgroundColor: previewUrl ? "#f9fafb" : "transparent",
+            opacity: isLoading ? 0.6 : 1,
           }}
         >
-          {previewUrl ? (
+          {isLoading ? (
+            // 로딩 중 표시 ⏳
+            <VStack alignItems="center" gap="$100">
+              <Text typography="body2" foreground="normal-100">
+                업로드 중...
+              </Text>
+            </VStack>
+          ) : previewUrl ? (
             // 이미지 미리보기 🖼️
             <>
               <Image
@@ -164,6 +205,18 @@ export const QuestionForm = ({
             </svg>
           )}
         </div>
+
+        {/* 에러 메시지 표시 ❌ */}
+        {error && (
+          <Text
+            typography="caption"
+            foreground="error"
+            marginTop="8px"
+            style={{ color: "red" }}
+          >
+            {error}
+          </Text>
+        )}
       </VStack>
 
       <Flex
