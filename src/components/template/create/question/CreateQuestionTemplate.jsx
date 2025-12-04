@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Funnel, Step, useFunnel } from "@/components/Funnel";
 import { Flex, Text, VStack } from "@vapor-ui/core";
 import { QuestionForm } from "./QuestionForm";
+import ProgressBar from "@/components/ProgressBar";
 
 // 질문 생성 단계 정의 📝
 const STEPS = ["first", "second", "third"];
@@ -35,21 +36,42 @@ export const CreateQuestionTemplate = () => {
     }
   };
 
+  const getCurrentStepNumber = () => {
+    const stepIndex = STEPS.indexOf(currentStep);
+    return stepIndex + 2;
+  };
+
   return (
-    <Flex>
-      <FunnelComponent>
-        <Step name="first">
-          <QuestionForm onClickPrev={handlePrev} onClickNext={handleNext} text="첫번째질문입니다" />
-        </Step>
+    <>
+      <ProgressBar currentStep={getCurrentStepNumber()} totalSteps={4} />
 
-        <Step name="second">
-          <QuestionForm onClickPrev={handlePrev} onClickNext={handleNext} text="두번째질문입니다" />
-        </Step>
+      <Flex padding="20px" height="100%">
+        <FunnelComponent>
+          <Step name="first">
+            <QuestionForm
+              onClickPrev={handlePrev}
+              onClickNext={handleNext}
+              text="첫번째질문입니다"
+            />
+          </Step>
 
-        <Step name="third">
-          <QuestionForm onClickPrev={handlePrev} onClickNext={handleNext} text="세번째질문입니다" />
-        </Step>
-      </FunnelComponent>
-    </Flex>
+          <Step name="second">
+            <QuestionForm
+              onClickPrev={handlePrev}
+              onClickNext={handleNext}
+              text="두번째질문입니다"
+            />
+          </Step>
+
+          <Step name="third">
+            <QuestionForm
+              onClickPrev={handlePrev}
+              onClickNext={handleNext}
+              text="세번째질문입니다"
+            />
+          </Step>
+        </FunnelComponent>
+      </Flex>
+    </>
   );
 };
