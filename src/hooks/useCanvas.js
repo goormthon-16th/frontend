@@ -184,7 +184,32 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
     drawCanvas();
   }, [imageUrl, textValues, textAttributes, fontFamily]);
 
-  return { canvasRef };
+  const getCanvasBlob = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return Promise.reject(new Error("Canvas 참조가 없습니다."));
+
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          // 성공적으로 Blob이 생성되면 resolve
+          resolve(blob);
+        } else {
+          // 실패하면 reject
+          reject(new Error("Blob 생성 실패"));
+        }
+      }, "image/png"); // 이미지 포맷을 PNG로 지정
+    });
+  };
+
+  const getCanvasDataUrl = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+
+    // 이미지 포맷을 PNG로 지정하여 Data URL 반환
+    return canvas.toDataURL("image/png");
+  };
+
+  return { canvasRef, getCanvasBlob, getCanvasDataUrl };
 };
 
 export default useCanvas;
