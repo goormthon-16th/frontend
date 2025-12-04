@@ -1,3 +1,5 @@
+import { CreateQuestionTemplate } from "@/components/template/create/question/CreateQuestionTemplate";
+
 export default function Page() {
-  return <div>page</div>;
+  return <CreateQuestionTemplate />;
 }
