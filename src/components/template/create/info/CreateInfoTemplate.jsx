@@ -14,8 +14,11 @@ import {
 import { useDaumPostcodeScript } from "@/utils/usePostCodeScript";
 
 export const CreateInfoTemplate = () => {
+  const [storeName, setStoreName] = useState("");
   const [address, setAddress] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [addressError, setAddressError] = useState("");
+  const [storeNameError, setStoreNameError] = useState("");
   const scriptLoaded = useDaumPostcodeScript();
 
   const handlePostCodeComplete = useCallback((data) => {
@@ -25,8 +28,37 @@ export const CreateInfoTemplate = () => {
       ? `${fullAddress} (${extraAddress})`
       : fullAddress;
     setAddress(finalAddress);
+    setAddressError(""); // 주소 입력 시 에러 초기화
     setIsDialogOpen(false);
   }, []);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log("handleSubmit called");
+
+    if (!address || address.trim() === "") {
+      setAddressError("가게 주소를 입력해주세요.");
+      return;
+    }
+
+    console.log("submit Success");
+  };
+
+  const handleNextClick = () => {
+    console.log("handleNextClick called");
+
+    if (!address || address.trim() === "") {
+      setAddressError("가게 주소를 입력해주세요.");
+      return;
+    }
+
+    if (!storeName || storeName.trim() === "") {
+      setStoreNameError("가게 이름을 입력해주세요.");
+      return;
+    }
+
+    console.log("next Success");
+  };
 
   // ref 콜백: DOM 요소가 마운트될 때 우편번호 검색 UI 초기화
   const containerRefCallback = useCallback(
@@ -54,75 +86,89 @@ export const CreateInfoTemplate = () => {
   );
 
   return (
-    <div>
-      <VStack
-        gap="$250"
-        padding="$300"
-        className="create-info"
-        render={<Form onSubmit={(event) => event.preventDefault()} />}
-      >
-        <VStack gap="$200">
-          <Field.Root>
-            <Box
-              render={<Field.Label />}
-              flexDirection="column"
-              justifyContent="space-between"
+    <VStack
+      gap="$250"
+      padding="$300"
+      className="create-info"
+      render={<Form onSubmit={handleSubmit} />}
+    >
+      <VStack gap="$200">
+        <Field.Root>
+          <Box
+            render={<Field.Label />}
+            flexDirection="column"
+            justifyContent="space-between"
+          >
+            <Text typography="subtitle2" foreground="normal-200">
+              가게 이름
+            </Text>
+            <TextInput
+              id="store-name"
+              size="lg"
+              required
+              type="text"
+              value={storeName}
+              onChange={(e) => {
+                setStoreName(e.target.value);
+                if (storeNameError) setStoreNameError(""); // 입력 시 에러 초기화
+              }}
+              aria-invalid={storeNameError ? "true" : "false"}
+            />
+          </Box>
+          <Field.Error match={storeNameError.length > 0}>
+            가게 이름을 입력해주세요.
+          </Field.Error>
+        </Field.Root>
+        <Field.Root>
+          <Box
+            render={<Field.Label />}
+            flexDirection="column"
+            justifyContent="space-between"
+          >
+            <Text typography="subtitle2" foreground="normal-200">
+              가게 주소
+            </Text>
+            <TextInput
+              id="store-address"
+              type="text"
+              size="lg"
+              value={address}
+              onChange={(e) => {
+                setAddress(e.target.value);
+                if (addressError) setAddressError(""); // 입력 시 에러 초기화
+              }}
+              onClick={() => setIsDialogOpen(true)}
+              placeholder="우편번호 검색을 눌러주세요"
+              readOnly
+              aria-invalid={addressError ? "true" : "false"}
+            />
+            <Dialog.Root
+              open={isDialogOpen}
+              onOpenChange={setIsDialogOpen}
+              modal={true}
             >
-              <Text typography="subtitle2" foreground="normal-200">
-                가게 이름
-              </Text>
-              <TextInput id="store-name" size="lg" required type="text" />
-            </Box>
-            <Field.Error match="valueMissing">
-              가게 이름을 입력해주세요.
-            </Field.Error>
-          </Field.Root>
-          <Field.Root>
-            <Box
-              render={<Field.Label />}
-              flexDirection="column"
-              justifyContent="space-between"
-            >
-              <Text typography="subtitle2" foreground="normal-200">
-                가게 주소
-              </Text>
-              <TextInput
-                id="store-address"
-                type="text"
-                required
-                size="lg"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                onClick={() => setIsDialogOpen(true)}
-                placeholder="우편번호 검색을 눌러주세요"
-                readOnly
-              />
-              <Dialog.Root
-                open={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                modal={true}
+              <Dialog.Popup
+                style={{ width: "400px", height: "500px", padding: 0 }}
               >
-                <Dialog.Popup
-                  style={{ width: "400px", height: "500px", padding: 0 }}
-                >
-                  <Dialog.Body style={{ padding: 0, height: "100%" }}>
-                    <div
-                      ref={containerRefCallback}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </Dialog.Body>
-                </Dialog.Popup>
-              </Dialog.Root>
-            </Box>
-            <Field.Error match="valueMissing">
-              가게 주소를 입력해주세요.
-            </Field.Error>
-          </Field.Root>
-        </VStack>
-        <VStack gap="$100">
-          <Button size="lg">다음</Button>
-        </VStack>
+                <Dialog.Body style={{ padding: 0, height: "100%" }}>
+                  <div
+                    ref={containerRefCallback}
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                </Dialog.Body>
+              </Dialog.Popup>
+            </Dialog.Root>
+          </Box>
+          <Field.Error match={addressError.length > 0}>
+            가게 주소를 입력해주세요.
+          </Field.Error>
+        </Field.Root>
       </VStack>
-    </div>
+      <VStack gap="$100">
+        <Button size="lg" onClick={handleNextClick}>
+          다음
+        </Button>
+      </VStack>
+    </VStack>
   );
 };
