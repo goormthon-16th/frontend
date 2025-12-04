@@ -1,5 +1,5 @@
-import Image from "next/image";
+import { HomeTemplate } from "@/components/template/home/HomeTemplate";
 
 export default function Home() {
-  return <>땡귤베리마치!</>;
+  return <HomeTemplate />;
 }
