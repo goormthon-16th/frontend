@@ -102,7 +102,9 @@ export default function SpotSwiper() {
                 </Text>
                 <HStack gap="6px">
                   {card.tags.map((tag) => (
-                    <Badge key={tag}>{tag}</Badge>
+                    <Badge shape="pill" key={tag}>
+                      {tag}
+                    </Badge>
                   ))}
                 </HStack>
               </div>
