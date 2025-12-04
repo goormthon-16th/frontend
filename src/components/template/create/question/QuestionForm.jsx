@@ -10,7 +10,13 @@ import {
   Textarea,
 } from "@vapor-ui/core";
 
-export const QuestionForm = ({ onClickPrev, onClickNext, text1, text2 }) => {
+export const QuestionForm = ({
+  onClickPrev,
+  onClickNext,
+  text1,
+  text2,
+  index = 0,
+}) => {
   // 📸 이미지 파일과 미리보기 URL 상태 관리
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -50,6 +56,8 @@ export const QuestionForm = ({ onClickPrev, onClickNext, text1, text2 }) => {
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
+
+  console.log("index", index);
   return (
     <VStack width="100%" height="100%" justifyContent="space-between">
       <Text typography="heading5">{text1}</Text>
@@ -183,11 +191,23 @@ export const QuestionForm = ({ onClickPrev, onClickNext, text1, text2 }) => {
             zIndex: 100,
           }}
         >
-          <Button variant="outline" width="50%" onClick={onClickPrev}>
+          <Button
+            width="50%"
+            height="48px"
+            onClick={onClickPrev}
+            color="black"
+            backgroundColor="$gray-100"
+          >
             이전으로
           </Button>
-          <Button width="50%" onClick={onClickNext}>
-            다음으로
+          <Button
+            width="50%"
+            color="white"
+            backgroundColor="$primary-200"
+            height="48px"
+            onClick={onClickNext}
+          >
+            {index === 4 ? "홍보물 생성하기" : "다음으로"}
           </Button>
         </HStack>
       </Flex>

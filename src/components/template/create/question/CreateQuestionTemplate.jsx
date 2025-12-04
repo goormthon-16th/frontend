@@ -50,7 +50,7 @@ export const CreateQuestionTemplate = () => {
       <ProgressBar currentStep={getCurrentStepNumber()} totalSteps={4} />
       <VStack padding="20px">
         <Text typography="heading6" color="$primary-100" marginTop={"59px"}>
-          {STEPS.indexOf(currentStep) + 2}/4
+          {getCurrentStepNumber()}/4
         </Text>
 
         <Flex height="100%" marginTop={"6px"}>
@@ -74,10 +74,12 @@ export const CreateQuestionTemplate = () => {
             </Step>
             <Step name="third">
               <QuestionForm
+                key={"form" + getCurrentStepNumber()}
                 onClickPrev={handlePrev}
                 onClickNext={handleNext}
                 text1="손님들에게 어떻게 기억되고 싶나요?"
                 text2="하는 것은 무엇인가요?"
+                index={4}
               />
             </Step>
           </FunnelComponent>
