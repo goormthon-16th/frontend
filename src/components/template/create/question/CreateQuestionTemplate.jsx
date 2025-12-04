@@ -42,39 +42,43 @@ export const CreateQuestionTemplate = () => {
   };
 
   return (
-    <>
+    <VStack>
       <ProgressBar currentStep={getCurrentStepNumber()} totalSteps={4} />
+      <VStack padding="20px">
+        <Text typography="heading6" color="$primary-100" marginTop={"59px"}>
+          {STEPS.indexOf(currentStep) + 2}/4
+        </Text>
 
-      <Flex padding="20px" height="100%">
-        <FunnelComponent>
-          <Step name="first">
-            <QuestionForm
-              onClickPrev={handlePrev}
-              onClickNext={handleNext}
-              text1="어떤 계기나 이유로"
-              text2="제주도에서 가게를 시작하셨나요?"
-            />
-          </Step>
+        <Flex height="100%" marginTop={"6px"}>
+          <FunnelComponent>
+            <Step name="first">
+              <QuestionForm
+                onClickPrev={handlePrev}
+                onClickNext={handleNext}
+                text1="어떤 계기나 이유로"
+                text2="제주도에서 가게를 시작하셨나요?"
+              />
+            </Step>
 
-          <Step name="second">
-            <QuestionForm
-              onClickPrev={handlePrev}
-              onClickNext={handleNext}
-              text1="제주도에서 가게를 운영하면서"
-              text2="좋았던 기억을 공유해주세요."
-            />
-          </Step>
-
-          <Step name="third">
-            <QuestionForm
-              onClickPrev={handlePrev}
-              onClickNext={handleNext}
-              text1="손님들에게 어떻게 기억되고 싶나요?"
-              text2="하는 것은 무엇인가요?"
-            />
-          </Step>
-        </FunnelComponent>
-      </Flex>
-    </>
+            <Step name="second">
+              <QuestionForm
+                onClickPrev={handlePrev}
+                onClickNext={handleNext}
+                text1="제주도에서 가게를 운영하면서"
+                text2="좋았던 기억을 공유해주세요."
+              />
+            </Step>
+            <Step name="third">
+              <QuestionForm
+                onClickPrev={handlePrev}
+                onClickNext={handleNext}
+                text1="손님들에게 어떻게 기억되고 싶나요?"
+                text2="하는 것은 무엇인가요?"
+              />
+            </Step>
+          </FunnelComponent>
+        </Flex>
+      </VStack>
+    </VStack>
   );
 };
