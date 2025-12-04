@@ -32,7 +32,6 @@ const cardData = [
 const styles = {
   wrapper: {
     width: "100%",
-    padding: "24px 0",
     boxSizing: "border-box",
   },
   swiper: {
