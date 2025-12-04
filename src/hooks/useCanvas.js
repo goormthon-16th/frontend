@@ -2,55 +2,178 @@
 
 import { useEffect, useRef } from "react";
 
-// 텍스트 속성 배열의 구조를 정의 (원본 코드 기반)
-// [x, y, width, height, fontSize, fontColor, textAlign, fontFamily]
-
-// 일반화된 Canvas Hook
+// 텍스트 속성 구조:
+// [0:_, 1:_, 2:_, 3:_, 4:fontSize, 5:fontColor, 6:x, 7:y_setting, 8:maxWidth, 9:textAlign, 10:fontWeight, 11:lineHeightFactor]
+// y_setting의 의미:
+// - 마지막 텍스트: 캔버스 하단으로부터의 거리 (Bottom Padding)
+// - 그 외 텍스트: 바로 아래 텍스트 블록의 Bottom으로부터의 간격 (Spacing)
 const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
   const canvasRef = useRef(null);
-  // const resetUserInfo = useResetRecoilState(UserInfo); // 제거
+
+  // -------------------------------------------------------------
+  // 텍스트 줄 바꿈 및 렌더링 함수
+  const wrapText = (ctx, text, x, initialY, maxWidth, lineHeight, actualFontSize) => {
+    if (!text) return { bottomY: initialY };
+
+    const paragraphs = text.split("\n");
+    let currentY = initialY;
+
+    paragraphs.forEach((paragraph) => {
+      const words = paragraph.split(" ");
+      let line = "";
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + " ";
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+
+        if (testWidth > maxWidth && n > 0) {
+          ctx.fillText(line.trim(), x, currentY);
+          line = words[n] + " ";
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line.trim(), x, currentY);
+      currentY += lineHeight;
+    });
+
+    // 텍스트 블록의 최종 Baseline Y 좌표
+    const finalBaselineY = currentY - lineHeight;
+
+    // 텍스트 블록의 실제 Bottom Y 좌표 근사치 계산:
+    const baselineToBottom = actualFontSize * 0.2;
+    const bottomY = finalBaselineY + baselineToBottom;
+
+    return { bottomY };
+  };
+  // -------------------------------------------------------------
+
+  // -------------------------------------------------------------
+  // 그라디언트 그리기 함수
+  const drawGradientOverlay = (ctx, canvasWidth, canvasHeight) => {
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+    gradient.addColorStop(0.0, "rgba(0, 0, 0, 0.05)");
+    gradient.addColorStop(0.2, "rgba(0, 0, 0, 0.05)");
+    gradient.addColorStop(0.5, "rgba(0, 0, 0, 0.35)");
+    gradient.addColorStop(0.8, "rgba(0, 0, 0, 0.85)");
+    gradient.addColorStop(1.0, "rgba(0, 0, 0, 0.95)");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  };
+  // -------------------------------------------------------------
 
   useEffect(() => {
     if (!imageUrl || textAttributes.length === 0) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const drawCanvas = () => {
-      // 캔버스 크기는 고정 (원본 코드 유지)
-      canvas.width = 3277;
-      canvas.height = 4096;
+      const canvasWidth = 5400;
+      const canvasHeight = 6795;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
 
       const img = new Image();
-      img.crossOrigin = "Anonymous"; // CORS 문제 방지를 위해 추가
+      img.crossOrigin = "Anonymous";
       img.src = imageUrl;
 
       img.onload = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-        textAttributes.forEach((textAttr, index) => {
-          // 원본 코드의 구조 분해를 인자 배열 구조에 맞게 일반화
-          // [0:_, 1:_, 2:_, 3:_, 4:fontSize, 5:fontColor, 6:x, 7:y]
-          // Note: 원본 배열 구조와 인덱스가 다를 경우 이 부분을 수정해야 합니다.
-          const [, , , , fontSize, fontColor, x, y] = textAttr;
+        // 1. 이미지 크롭 및 그라디언트 로직 (생략)
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+        const canvasRatio = canvasWidth / canvasHeight;
+        const imageRatio = imgWidth / imgHeight;
 
-          // 폰트와 스타일을 외부 인자로 받은 값과 텍스트 속성을 사용하여 설정
-          ctx.font = `${fontSize * 10}px ${fontFamily}`;
-          ctx.textAlign = "center";
+        let sourceX = 0;
+        let sourceY = 0;
+        let sourceWidth = imgWidth;
+        let sourceHeight = imgHeight;
+
+        if (imageRatio > canvasRatio) {
+          sourceHeight = imgHeight;
+          sourceWidth = imgHeight * canvasRatio;
+          sourceX = (imgWidth - sourceWidth) / 2;
+        } else {
+          sourceWidth = imgWidth;
+          sourceHeight = imgWidth / canvasRatio;
+          sourceY = (imgHeight - sourceHeight) / 2;
+        }
+
+        ctx.drawImage(
+          img,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          0,
+          0,
+          canvasWidth,
+          canvasHeight
+        );
+        drawGradientOverlay(ctx, canvasWidth, canvasHeight);
+
+        // ==========================================================
+        // 2. 텍스트 Bottom-Up 렌더링
+        // ==========================================================
+
+        const TEXT_COUNT = textAttributes.length;
+        let nextTextBottomY = canvasHeight; // 다음 텍스트가 배치되어야 할 Bottom Y 좌표
+
+        // 텍스트 배열을 역순으로 순회하여 Bottom-Up 방식으로 배치합니다.
+        for (let index = TEXT_COUNT - 1; index >= 0; index--) {
+          const textAttr = textAttributes[index];
+          const text = textValues[index] || "";
+
+          const [
+            ,
+            ,
+            ,
+            ,
+            fontSize,
+            fontColor,
+            x,
+            ySetting,
+            maxWidth,
+            textAlign,
+            fontWeight,
+            lineHeightFactor,
+          ] = textAttr;
+
+          const actualFontSize = fontSize * 5;
+          const factor = parseFloat(lineHeightFactor) || 1.2;
+          const lineHeight = actualFontSize * factor;
+
+          ctx.font = `${fontWeight} ${actualFontSize}px ${fontFamily}`;
+          ctx.textAlign = textAlign || "left";
           ctx.fillStyle = fontColor;
 
-          const text = textValues[index] || "";
-          const lines = text.split("\n");
-          const lineHeight = fontSize * 12;
+          let targetBottomY;
 
-          lines.forEach((line, i) => {
-            // x, y는 textAttr에서 가져옵니다.
-            ctx.fillText(line, x, y + i * lineHeight);
-          });
-        });
+          if (index === TEXT_COUNT - 1) {
+            // 마지막 텍스트 (캔버스 하단 패딩 기준)
+            targetBottomY = canvasHeight - ySetting;
+          } else {
+            // 이전 텍스트 (바로 아래 텍스트와의 간격 기준)
+            targetBottomY = nextTextBottomY - ySetting;
+          }
+
+          // 텍스트의 Baseline Y 좌표를 역산합니다.
+          const baselineToBottom = actualFontSize * 0.2;
+          const startY = targetBottomY - baselineToBottom;
+
+          // 텍스트 렌더링
+          wrapText(ctx, text, x, startY, maxWidth, lineHeight, actualFontSize);
+
+          // 다음 텍스트 (index-1) 계산을 위해 현재 텍스트 블록의 Target Bottom Y를 저장
+          nextTextBottomY = targetBottomY;
+        }
       };
 
       img.onerror = (err) => {
@@ -59,18 +182,8 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
     };
 
     drawCanvas();
-  }, [imageUrl, textValues, textAttributes, fontFamily]); // 의존성 배열 업데이트
+  }, [imageUrl, textValues, textAttributes, fontFamily]);
 
-  // -------------------------------------------------------------------
-  // 서버 통신 부분 일반화:
-  // 로컬 `privateAxios`나 `resetUserInfo`를 사용할 수 없으므로,
-  // 캔버스 이미지를 반환하는 로직만 남기거나, 외부 함수를 인자로 받도록 수정합니다.
-  // 여기서는 순수하게 캔버스 데이터를 다루는 함수만 유지하고 통신 로직은 제거합니다.
-
-  /**
-   * 캔버스 이미지를 PNG 형식의 Blob으로 변환하여 반환합니다.
-   * 이 Blob을 사용하여 외부에서 서버로 업로드를 처리할 수 있습니다.
-   */
   const getCanvasBlob = () => {
     const canvas = canvasRef.current;
     if (!canvas) return Promise.reject(new Error("Canvas 참조가 없습니다."));
@@ -78,25 +191,23 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
     return new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {
         if (blob) {
+          // 성공적으로 Blob이 생성되면 resolve
           resolve(blob);
         } else {
+          // 실패하면 reject
           reject(new Error("Blob 생성 실패"));
         }
-      }, "image/png");
+      }, "image/png"); // 이미지 포맷을 PNG로 지정
     });
   };
 
-  /**
-   * 캔버스 이미지를 base64 Data URL 문자열로 반환합니다.
-   */
   const getCanvasDataUrl = () => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
 
+    // 이미지 포맷을 PNG로 지정하여 Data URL 반환
     return canvas.toDataURL("image/png");
   };
-
-  // 원본 코드의 `uploadImage` 함수는 로컬 파일 업로드 통신 로직이므로 제거합니다.
 
   return { canvasRef, getCanvasBlob, getCanvasDataUrl };
 };
