@@ -1,9 +1,10 @@
-import { Flex, Text, VStack, HStack, Badge } from "@vapor-ui/core";
+import { Text, VStack, HStack, Badge } from "@vapor-ui/core";
 import Image from "next/image";
+import "@/styles/font.css";
 
 const PostBlock = ({ isFirst, title, content }) => {
   return (
-    <VStack margin="$200 0" gap="$100">
+    <VStack margin="$200 0" gap="$200">
       <div
         style={{
           width: "100%",
@@ -11,7 +12,6 @@ const PostBlock = ({ isFirst, title, content }) => {
           height: 0,
           overflow: "hidden",
           paddingTop: "70%",
-          // marginBottom: "20px",
           borderRadius: "8px",
         }}
       >
@@ -20,10 +20,19 @@ const PostBlock = ({ isFirst, title, content }) => {
           src="https://cdn.pixabay.com/photo/2025/09/12/16/49/dog-9830833_1280.jpg"
           alt="img"
           style={{ objectFit: "cover" }}
-          // fill 사용 시 성능 최적화를 위한 sizes 속성 추가 (선택)
           sizes="90vw"
         />
       </div>
+      <Text
+        style={{
+          fontFamily: "KCC Sonkeechung",
+          fontSize: "24px",
+          fontWeight: "500",
+          marginTop: "20px",
+        }}
+      >
+        {title}
+      </Text>
       {isFirst && (
         <HStack gap="$100">
           {["감성", "이주민", "귤칵테일"].map((tag) => {
@@ -31,8 +40,8 @@ const PostBlock = ({ isFirst, title, content }) => {
           })}
         </HStack>
       )}
-      <Text typography="heading4">{title}</Text>
-      <Text>{content}</Text>
+
+      <Text style={{ fontSize: "14px", lineHeight: 1.5, marginTop: "10px" }}>{content}</Text>
     </VStack>
   );
 };
