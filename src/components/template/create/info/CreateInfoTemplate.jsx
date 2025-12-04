@@ -27,16 +27,19 @@ export const CreateInfoTemplate = () => {
   const scriptLoaded = useDaumPostcodeScript();
   const router = useRouter();
 
-  const handlePostCodeComplete = (data) => {
-    const fullAddress = data.address;
-    const extraAddress = data.addressType === "R" ? data.bname : "";
-    const finalAddress = extraAddress
-      ? `${fullAddress} (${extraAddress})`
-      : fullAddress;
-    setAddress(finalAddress);
-    setAddressError(""); // 주소 입력 시 에러 초기화
-    setIsDialogOpen(false);
-  };
+  const handlePostCodeComplete = useCallback(
+    (data) => {
+      const fullAddress = data.address;
+      const extraAddress = data.addressType === "R" ? data.bname : "";
+      const finalAddress = extraAddress
+        ? `${fullAddress} (${extraAddress})`
+        : fullAddress;
+      setAddress(finalAddress);
+      setAddressError(""); // 주소 입력 시 에러 초기화
+      setIsDialogOpen(false);
+    },
+    [setAddress]
+  );
 
   const handleSubmit = (event) => {
     event.preventDefault();
