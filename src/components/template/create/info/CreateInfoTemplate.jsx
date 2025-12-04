@@ -88,7 +88,7 @@ export const CreateInfoTemplate = () => {
 
   return (
     <VStack
-      padding="$300"
+      padding="20px"
       height="100%"
       className="create-info"
       justifyContent="space-between"
@@ -173,7 +173,7 @@ export const CreateInfoTemplate = () => {
           bottom: 0,
           left: 0,
           right: 0,
-          padding: "24px",
+          padding: "20px",
           backgroundColor: "white",
           zIndex: 100,
         }}

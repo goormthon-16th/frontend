@@ -24,7 +24,6 @@ export const Header = () => {
       position="sticky"
       top={0}
       backgroundColor="white"
-      zIndex={50}
     >
       <IconButton
         aria-label="뒤로가기"
