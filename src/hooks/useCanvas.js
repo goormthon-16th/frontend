@@ -2,18 +2,21 @@
 
 import { useEffect, useRef } from "react";
 
-// 새로운 텍스트 속성 구조:
-// [0:_, 1:_, 2:_, 3:_, 4:fontSize, 5:fontColor, 6:x, 7:y, 8:maxWidth, 9:textAlign, 10:fontWeight, 11:lineHeightFactor]
+// 텍스트 속성 구조:
+// [0:_, 1:_, 2:_, 3:_, 4:fontSize, 5:fontColor, 6:x, 7:y_setting, 8:maxWidth, 9:textAlign, 10:fontWeight, 11:lineHeightFactor]
+// y_setting의 의미:
+// - 마지막 텍스트: 캔버스 하단으로부터의 거리 (Bottom Padding)
+// - 그 외 텍스트: 바로 아래 텍스트 블록의 Bottom으로부터의 간격 (Spacing)
 const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
   const canvasRef = useRef(null);
 
   // -------------------------------------------------------------
-  // 텍스트를 주어진 최대 너비(maxWidth)에 맞춰 자동으로 줄 바꿈하고 렌더링하는 함수 (변경 없음)
-  const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
-    if (!text) return;
+  // 텍스트 줄 바꿈 및 렌더링 함수
+  const wrapText = (ctx, text, x, initialY, maxWidth, lineHeight, actualFontSize) => {
+    if (!text) return { bottomY: initialY };
 
     const paragraphs = text.split("\n");
-    let currentY = y;
+    let currentY = initialY;
 
     paragraphs.forEach((paragraph) => {
       const words = paragraph.split(" ");
@@ -35,17 +38,26 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
       ctx.fillText(line.trim(), x, currentY);
       currentY += lineHeight;
     });
+
+    // 텍스트 블록의 최종 Baseline Y 좌표
+    const finalBaselineY = currentY - lineHeight;
+
+    // 텍스트 블록의 실제 Bottom Y 좌표 근사치 계산:
+    const baselineToBottom = actualFontSize * 0.2;
+    const bottomY = finalBaselineY + baselineToBottom;
+
+    return { bottomY };
   };
   // -------------------------------------------------------------
 
   // -------------------------------------------------------------
-  // 그라디언트 그리기 함수 (변경 없음)
+  // 그라디언트 그리기 함수
   const drawGradientOverlay = (ctx, canvasWidth, canvasHeight) => {
     const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
     gradient.addColorStop(0.0, "rgba(0, 0, 0, 0.05)");
     gradient.addColorStop(0.2, "rgba(0, 0, 0, 0.05)");
     gradient.addColorStop(0.5, "rgba(0, 0, 0, 0.35)");
-    gradient.addColorStop(0.9, "rgba(0, 0, 0, 0.85)");
+    gradient.addColorStop(0.8, "rgba(0, 0, 0, 0.85)");
     gradient.addColorStop(1.0, "rgba(0, 0, 0, 0.95)");
 
     ctx.fillStyle = gradient;
@@ -55,14 +67,12 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
 
   useEffect(() => {
     if (!imageUrl || textAttributes.length === 0) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const drawCanvas = () => {
-      // 캔버스 크기 설정 (고정)
       const canvasWidth = 5400;
       const canvasHeight = 6795;
       canvas.width = canvasWidth;
@@ -75,7 +85,7 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
       img.onload = () => {
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-        // 1. 이미지 중앙 크롭 로직 (변경 없음)
+        // 1. 이미지 크롭 및 그라디언트 로직 (생략)
         const imgWidth = img.width;
         const imgHeight = img.height;
         const canvasRatio = canvasWidth / canvasHeight;
@@ -107,14 +117,20 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
           canvasWidth,
           canvasHeight
         );
-
-        // 2. 그라디언트 오버레이 추가 (변경 없음)
         drawGradientOverlay(ctx, canvasWidth, canvasHeight);
 
-        // 3. 텍스트 렌더링
-        textAttributes.forEach((textAttr, index) => {
-          // [0:_, 1:_, 2:_, 3:_, 4:fontSize, 5:fontColor, 6:x, 7:y, 8:maxWidth, 9:textAlign, 10:fontWeight, 11:lineHeightFactor]
-          // ✨ 11번째 인덱스에 lineHeightFactor 추가
+        // ==========================================================
+        // 2. 텍스트 Bottom-Up 렌더링
+        // ==========================================================
+
+        const TEXT_COUNT = textAttributes.length;
+        let nextTextBottomY = canvasHeight; // 다음 텍스트가 배치되어야 할 Bottom Y 좌표
+
+        // 텍스트 배열을 역순으로 순회하여 Bottom-Up 방식으로 배치합니다.
+        for (let index = TEXT_COUNT - 1; index >= 0; index--) {
+          const textAttr = textAttributes[index];
+          const text = textValues[index] || "";
+
           const [
             ,
             ,
@@ -123,17 +139,14 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
             fontSize,
             fontColor,
             x,
-            y,
+            ySetting,
             maxWidth,
             textAlign,
             fontWeight,
             lineHeightFactor,
           ] = textAttr;
 
-          // 폰트 스타일 설정
           const actualFontSize = fontSize * 5;
-
-          // ✨ 줄 간격 계산 로직 수정: 제공된 factor를 사용하고, 없을 경우 1.2를 기본값으로 사용
           const factor = parseFloat(lineHeightFactor) || 1.2;
           const lineHeight = actualFontSize * factor;
 
@@ -141,10 +154,26 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
           ctx.textAlign = textAlign || "left";
           ctx.fillStyle = fontColor;
 
-          const text = textValues[index] || "";
+          let targetBottomY;
 
-          wrapText(ctx, text, x, y, maxWidth, lineHeight);
-        });
+          if (index === TEXT_COUNT - 1) {
+            // 마지막 텍스트 (캔버스 하단 패딩 기준)
+            targetBottomY = canvasHeight - ySetting;
+          } else {
+            // 이전 텍스트 (바로 아래 텍스트와의 간격 기준)
+            targetBottomY = nextTextBottomY - ySetting;
+          }
+
+          // 텍스트의 Baseline Y 좌표를 역산합니다.
+          const baselineToBottom = actualFontSize * 0.2;
+          const startY = targetBottomY - baselineToBottom;
+
+          // 텍스트 렌더링
+          wrapText(ctx, text, x, startY, maxWidth, lineHeight, actualFontSize);
+
+          // 다음 텍스트 (index-1) 계산을 위해 현재 텍스트 블록의 Target Bottom Y를 저장
+          nextTextBottomY = targetBottomY;
+        }
       };
 
       img.onerror = (err) => {
@@ -155,32 +184,7 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
     drawCanvas();
   }, [imageUrl, textValues, textAttributes, fontFamily]);
 
-  // -------------------------------------------------------------------
-  // ... (Blob, Data URL 반환 함수는 변경 없음)
-  // -------------------------------------------------------------------
-  const getCanvasBlob = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return Promise.reject(new Error("Canvas 참조가 없습니다."));
-
-    return new Promise((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error("Blob 생성 실패"));
-        }
-      }, "image/png");
-    });
-  };
-
-  const getCanvasDataUrl = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return null;
-
-    return canvas.toDataURL("image/png");
-  };
-
-  return { canvasRef, getCanvasBlob, getCanvasDataUrl };
+  return { canvasRef };
 };
 
 export default useCanvas;
