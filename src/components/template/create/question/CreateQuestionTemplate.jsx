@@ -6,6 +6,7 @@ import { Flex, Text, VStack } from "@vapor-ui/core";
 import { QuestionForm } from "./QuestionForm";
 import ProgressBar from "@/components/ProgressBar";
 import { useRouter } from "next/navigation";
+import { useSpotCreate } from "@/contexts/SpotCreateContext";
 
 // 1. AI 스토리 생성 훅 임포트
 import { useGenerateStory } from "@/hooks/useGenerateStory";
@@ -15,21 +16,19 @@ import { useCreateSpot } from "@/hooks/usePostSpot";
 // 질문 생성 단계 정의 📝
 const STEPS = ["first", "second", "third"];
 
-// 임시 데이터 (실제 데이터는 Funnel을 통해 취합되어야 합니다)
-const MOCK_PAYLOAD_DATA = {
-  ownerName: "홍길동",
-  spotName: "제주 맛집",
-  address: "제주 어딘가",
-  thumbnailUrl: "https://example.com/thumb.jpg",
-  text1: "어떤 계기나 이유로 제주도에서 가게를 시작하셨나요?",
-  imageUrl1: "https://example.com/img1.jpg",
-  text2: "제주도에서 가게를 운영하면서 좋았던 기억을 공유해주세요.",
-  imageUrl2: "https://example.com/img2.jpg",
-  text3: "손님들에게 어떻게 기억되고 싶나요? 하는 것은 무엇인가요?",
-  imageUrl3: "https://example.com/img3.jpg",
-};
-
 export const CreateQuestionTemplate = () => {
+  // 🎯 Context에서 데이터 가져오기
+  const {
+    spotName,
+    address,
+    text1,
+    text2,
+    text3,
+    imageUrl1,
+    imageUrl2,
+    imageUrl3,
+  } = useSpotCreate();
+
   // Funnel 훅 사용 - 단계 관리 🎣
   const [FunnelComponent, setStep] = useFunnel(STEPS, "first");
 
@@ -57,13 +56,25 @@ export const CreateQuestionTemplate = () => {
 
   // 최종 제출 핸들러 (스토리 생성 -> 장소 저장) ✨
   const handleFinalSubmit = async () => {
-    // 1. 최종 폼 데이터 (실제 프로젝트에서는 state에서 가져와야 함)
-    const storyPayload = MOCK_PAYLOAD_DATA;
+    // 🎯 Context에서 가져온 실제 데이터로 Payload 구성
+    const storyPayload = {
+      ownerName: "김탐라", // TODO: 실제 사장님 이름 추가 필요
+      spotName,
+      address,
+      text1,
+      imageUrl1,
+      text2,
+      imageUrl2,
+      text3,
+      imageUrl3,
+    };
+
+    console.log("📦 최종 제출 데이터:", storyPayload);
 
     try {
       // 1단계: 스토리 생성 API 호출
       const generatedResult = await generateStory(storyPayload);
-      console.log("스토리 생성 성공:", generatedResult.story);
+      console.log("✅ 스토리 생성 성공:", generatedResult.story);
 
       if (!generatedResult.story) {
         throw new Error("AI 스토리 생성 결과가 비어 있습니다.");
@@ -74,10 +85,9 @@ export const CreateQuestionTemplate = () => {
         spotName: storyPayload.spotName,
         address: storyPayload.address,
         // AI가 생성한 스토리를 본문으로 사용
-        storyTitle: storyPayload.spotName + "의 이야기", // 적절한 제목 생성 로직 필요
+        storyTitle: storyPayload.spotName + "의 이야기",
         storyContent: generatedResult.story,
         imageUrls: [
-          storyPayload.thumbnailUrl,
           storyPayload.imageUrl1,
           storyPayload.imageUrl2,
           storyPayload.imageUrl3,
@@ -88,11 +98,11 @@ export const CreateQuestionTemplate = () => {
       const createdResult = await createSpot(createPayload);
 
       // 4단계: 성공 후 로직 (결과 페이지로 이동)
-      console.log("장소 생성 및 저장 성공. ID:", createdResult.spotId);
+      console.log("✅ 장소 생성 및 저장 성공. ID:", createdResult.spotId);
       // router.push(`/spot/${createdResult.spotId}`);
     } catch (e) {
-      console.error("최종 제출 프로세스 실패:", e);
-      // 사용자에게 실패 메시지 표시 로직 추가
+      console.error("❌ 최종 제출 프로세스 실패:", e);
+      alert("장소 생성에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -133,7 +143,9 @@ export const CreateQuestionTemplate = () => {
     return (
       <VStack align="center" justify="center" height="100vh">
         <Text typography="heading3">
-          {isGenerating ? "AI 스토리를 생성 중입니다..." : "최종 정보를 서버에 저장 중입니다..."}
+          {isGenerating
+            ? "AI 스토리를 생성 중입니다..."
+            : "최종 정보를 서버에 저장 중입니다..."}
         </Text>
         <Text typography="subtitle1">잠시만 기다려주세요.</Text>
       </VStack>
@@ -156,6 +168,7 @@ export const CreateQuestionTemplate = () => {
                 onClickNext={handleNext}
                 text1="어떤 계기나 이유로"
                 text2="제주도에서 가게를 시작하셨나요?"
+                step={1}
               />
             </Step>
 
@@ -165,6 +178,7 @@ export const CreateQuestionTemplate = () => {
                 onClickNext={handleNext}
                 text1="제주도에서 가게를 운영하면서"
                 text2="좋았던 기억을 공유해주세요."
+                step={2}
               />
             </Step>
             <Step name="third">
@@ -175,6 +189,7 @@ export const CreateQuestionTemplate = () => {
                 text1="손님들에게 어떻게 기억되고 싶나요?"
                 text2="하는 것은 무엇인가요?"
                 index={4}
+                step={3}
                 buttonText="최종 스토리 등록" // 최종 제출 버튼 텍스트
               />
             </Step>

@@ -15,17 +15,19 @@ import {
 import { useDaumPostcodeScript } from "@/utils/usePostCodeScript";
 import ProgressBar from "@/components/ProgressBar";
 import { useRouter } from "next/navigation";
+import { useSpotCreate } from "@/contexts/SpotCreateContext";
 
 export const CreateInfoTemplate = () => {
-  const [storeName, setStoreName] = useState("");
-  const [address, setAddress] = useState("");
+  // 🎯 Context에서 상태 가져오기
+  const { spotName, setSpotName, address, setAddress } = useSpotCreate();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [addressError, setAddressError] = useState("");
   const [storeNameError, setStoreNameError] = useState("");
   const scriptLoaded = useDaumPostcodeScript();
   const router = useRouter();
 
-  const handlePostCodeComplete = useCallback((data) => {
+  const handlePostCodeComplete = (data) => {
     const fullAddress = data.address;
     const extraAddress = data.addressType === "R" ? data.bname : "";
     const finalAddress = extraAddress
@@ -34,7 +36,7 @@ export const CreateInfoTemplate = () => {
     setAddress(finalAddress);
     setAddressError(""); // 주소 입력 시 에러 초기화
     setIsDialogOpen(false);
-  }, []);
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -54,12 +56,12 @@ export const CreateInfoTemplate = () => {
       return;
     }
 
-    if (!storeName || storeName.trim() === "") {
+    if (!spotName || spotName.trim() === "") {
       setStoreNameError("가게 이름을 입력해주세요.");
       return;
     }
 
-    console.log("next Success");
+    console.log("next Success - spotName:", spotName, "address:", address);
     router.push("/spot/create/question");
   };
 
@@ -113,9 +115,9 @@ export const CreateInfoTemplate = () => {
                 size="lg"
                 required
                 type="text"
-                value={storeName}
+                value={spotName}
                 onChange={(e) => {
-                  setStoreName(e.target.value);
+                  setSpotName(e.target.value);
                   if (storeNameError) setStoreNameError(""); // 입력 시 에러 초기화
                 }}
                 aria-invalid={storeNameError ? "true" : "false"}
