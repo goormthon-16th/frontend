@@ -6,6 +6,7 @@ import {
   Button,
   Dialog,
   Field,
+  Flex,
   Form,
   Text,
   TextInput,
@@ -87,9 +88,10 @@ export const CreateInfoTemplate = () => {
 
   return (
     <VStack
-      gap="$250"
       padding="$300"
+      height="100%"
       className="create-info"
+      justifyContent="space-between"
       render={<Form onSubmit={handleSubmit} />}
     >
       <VStack gap="$200">
@@ -164,11 +166,22 @@ export const CreateInfoTemplate = () => {
           </Field.Error>
         </Field.Root>
       </VStack>
-      <VStack gap="$100">
-        <Button size="lg" onClick={handleNextClick}>
+      <Flex
+        width="100%"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: "24px",
+          backgroundColor: "white",
+          zIndex: 100,
+        }}
+      >
+        <Button size="lg" width="100%" onClick={handleNextClick}>
           다음
         </Button>
-      </VStack>
+      </Flex>
     </VStack>
   );
 };
