@@ -1,16 +1,21 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import {
+  Box,
   Button,
+  Dialog,
+  Field,
   Flex,
   HStack,
   Text,
+  TextInput,
   InputGroup,
   VStack,
   Textarea,
 } from "@vapor-ui/core";
 import useImageUploadWithContext from "@/hooks/useImageUploadWithContext";
 import { useSpotCreate } from "@/contexts/SpotCreateContext";
+import { useDaumPostcodeScript } from "@/utils/usePostCodeScript";
 
 export const QuestionForm = ({
   onClickPrev,
@@ -18,7 +23,8 @@ export const QuestionForm = ({
   text1,
   text2,
   index = 0,
-  step = 1, // 현재 단계 (1, 2, 3)
+  step = 0, // 현재 단계 (0: info, 1, 2, 3)
+  buttonText = "다음으로", // 버튼 텍스트 커스터마이징
 }) => {
   // 📸 이미지 파일과 미리보기 URL 상태 관리
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -26,6 +32,13 @@ export const QuestionForm = ({
 
   // 🎯 Context에서 상태 가져오기
   const context = useSpotCreate();
+
+  // 🏠 Info 단계 (step === 0) 전용 상태
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [addressError, setAddressError] = useState("");
+  const [storeNameError, setStoreNameError] = useState("");
+  const scriptLoaded = useDaumPostcodeScript();
+
   const textValue =
     step === 1 ? context.text1 : step === 2 ? context.text2 : context.text3;
   const setText =
@@ -35,7 +48,7 @@ export const QuestionForm = ({
       ? context.setText2
       : context.setText3;
 
-  // 🖼️ 이미지 업로드 훅 (Context와 통합)
+  // 🖼️ 이미지 업로드 훅 (Context와 통합) - info 단계에서는 사용 안 함
   const { handleImageUpload, isLoading, error } =
     useImageUploadWithContext(step);
 
@@ -89,6 +102,158 @@ export const QuestionForm = ({
     fileInputRef.current?.click();
   };
 
+  const handlePostCodeComplete = useCallback(
+    (data) => {
+      const fullAddress = data.address;
+      const extraAddress = data.addressType === "R" ? data.bname : "";
+      const finalAddress = extraAddress
+        ? `${fullAddress} (${extraAddress})`
+        : fullAddress;
+      context.setAddress(finalAddress);
+      setAddressError("");
+      setIsDialogOpen(false);
+    },
+    [context]
+  );
+
+  const containerRefCallback = useCallback(
+    (element) => {
+      if (!element || !isDialogOpen || !scriptLoaded || !window.daum) return;
+
+      const postcode = new window.daum.Postcode({
+        oncomplete: function (data) {
+          handlePostCodeComplete(data);
+        },
+        onclose: function (state) {
+          if (state === "FORCE_CLOSE") {
+            setIsDialogOpen(false);
+          }
+        },
+        width: "100%",
+        height: "100%",
+      });
+
+      postcode.embed(element, {
+        autoClose: false,
+      });
+    },
+    [isDialogOpen, scriptLoaded, handlePostCodeComplete]
+  );
+
+  const handleInfoNext = () => {
+    if (!context.address || context.address.trim() === "") {
+      setAddressError("가게 주소를 입력해주세요.");
+      return;
+    }
+
+    if (!context.spotName || context.spotName.trim() === "") {
+      setStoreNameError("가게 이름을 입력해주세요.");
+      return;
+    }
+    onClickNext();
+  };
+
+  // 🏠 Info 단계 렌더링 (step === 0)
+  if (step === 0) {
+    return (
+      <VStack width="100%" height="100%" justifyContent="space-between">
+        <Text typography="heading5">{text1}</Text>
+        <Text typography="heading5">{text2}</Text>
+
+        <VStack gap="$200" width="100%" marginTop="20px">
+          <Field.Root>
+            <Box
+              render={<Field.Label />}
+              flexDirection="column"
+              justifyContent="space-between"
+            >
+              <Text typography="subtitle2" foreground="normal-200">
+                가게 이름
+              </Text>
+              <TextInput
+                id="store-name"
+                size="lg"
+                required
+                type="text"
+                value={context.spotName}
+                onChange={(e) => {
+                  context.setSpotName(e.target.value);
+                  if (storeNameError) setStoreNameError(""); // 입력 시 에러 초기화
+                }}
+                aria-invalid={storeNameError ? "true" : "false"}
+              />
+            </Box>
+            <Field.Error match={storeNameError.length > 0}>
+              가게 이름을 입력해주세요.
+            </Field.Error>
+          </Field.Root>
+          <Field.Root>
+            <Box
+              render={<Field.Label />}
+              flexDirection="column"
+              justifyContent="space-between"
+            >
+              <Text typography="subtitle2" foreground="normal-200">
+                가게 주소
+              </Text>
+              <TextInput
+                id="store-address"
+                type="text"
+                size="lg"
+                value={context.address}
+                onChange={(e) => {
+                  context.setAddress(e.target.value);
+                  if (addressError) setAddressError(""); // 입력 시 에러 초기화
+                }}
+                onClick={() => setIsDialogOpen(true)}
+                placeholder="우편번호 검색을 눌러주세요"
+                readOnly
+                aria-invalid={addressError ? "true" : "false"}
+              />
+              <Dialog.Root
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                modal={true}
+              >
+                <Dialog.Popup
+                  style={{ width: "400px", height: "500px", padding: 0 }}
+                >
+                  <Dialog.Body style={{ padding: 0, height: "100%" }}>
+                    <div
+                      ref={containerRefCallback}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </Dialog.Body>
+                </Dialog.Popup>
+              </Dialog.Root>
+            </Box>
+            <Field.Error match={addressError.length > 0}>
+              가게 주소를 입력해주세요.
+            </Field.Error>
+          </Field.Root>
+        </VStack>
+
+        <Flex
+          width="100%"
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: "20px",
+            backgroundColor: "white",
+            zIndex: 100,
+          }}
+        >
+          <Button size="lg" width="100%" onClick={handleInfoNext}>
+            {buttonText}
+          </Button>
+        </Flex>
+      </VStack>
+    );
+  }
+
+  // 📝 질문 단계 렌더링 (step >= 1)
   return (
     <VStack width="100%" height="100%" justifyContent="space-between">
       <Text typography="heading5">{text1}</Text>
@@ -260,7 +425,7 @@ export const QuestionForm = ({
             height="48px"
             onClick={onClickNext}
           >
-            {index === 4 ? "홍보물 생성하기" : "다음으로"}
+            {buttonText}
           </Button>
         </HStack>
       </Flex>

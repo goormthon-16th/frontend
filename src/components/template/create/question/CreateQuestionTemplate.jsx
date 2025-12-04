@@ -13,8 +13,8 @@ import { useGenerateStory } from "@/hooks/useGenerateStory";
 // 2. ★★★ 최종 장소 생성/저장 훅 임포트 (경로 반영) ★★★
 import { useCreateSpot } from "@/hooks/usePostSpot";
 
-// 질문 생성 단계 정의 📝
-const STEPS = ["first", "second", "third"];
+// 질문 생성 단계 정의 📝 (info 단계 추가)
+const STEPS = ["info", "first", "second", "third"];
 
 export const CreateQuestionTemplate = () => {
   // 🎯 Context에서 데이터 가져오기
@@ -29,11 +29,11 @@ export const CreateQuestionTemplate = () => {
     imageUrl3,
   } = useSpotCreate();
 
-  // Funnel 훅 사용 - 단계 관리 🎣
-  const [FunnelComponent, setStep] = useFunnel(STEPS, "first");
+  // Funnel 훅 사용 - 단계 관리 🎣 (초기 단계를 "info"로 설정)
+  const [FunnelComponent, setStep] = useFunnel(STEPS, "info");
 
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState("first");
+  const [currentStep, setCurrentStep] = useState("info");
 
   // 1. 스토리 생성 훅 (AI 호출)
   const {
@@ -135,7 +135,7 @@ export const CreateQuestionTemplate = () => {
 
   const getCurrentStepNumber = () => {
     const stepIndex = STEPS.indexOf(currentStep);
-    return stepIndex + 2;
+    return stepIndex + 1; // info(0) -> 1, first(1) -> 2, second(2) -> 3, third(3) -> 4
   };
 
   // ★★★ 통합 로딩 상태 표시 ★★★
@@ -162,6 +162,19 @@ export const CreateQuestionTemplate = () => {
 
         <Flex height="100%" marginTop={"6px"}>
           <FunnelComponent>
+            {/* 🏠 Info 단계 - 가게 이름 & 주소 입력 */}
+            <Step name="info">
+              <QuestionForm
+                onClickPrev={handlePrev}
+                onClickNext={handleNext}
+                step={0}
+                buttonText="다음으로"
+                text1={"자, 이제 사장님의 이야기를 시작해 볼까요?"}
+                text2={"사장님의 정보를 입력해주세요."}
+              />
+            </Step>
+
+            {/* 📝 질문 1단계 */}
             <Step name="first">
               <QuestionForm
                 onClickPrev={handlePrev}
@@ -169,9 +182,11 @@ export const CreateQuestionTemplate = () => {
                 text1="어떤 계기나 이유로"
                 text2="제주도에서 가게를 시작하셨나요?"
                 step={1}
+                buttonText="다음으로"
               />
             </Step>
 
+            {/* 📝 질문 2단계 */}
             <Step name="second">
               <QuestionForm
                 onClickPrev={handlePrev}
@@ -179,8 +194,11 @@ export const CreateQuestionTemplate = () => {
                 text1="제주도에서 가게를 운영하면서"
                 text2="좋았던 기억을 공유해주세요."
                 step={2}
+                buttonText="다음으로"
               />
             </Step>
+
+            {/* 📝 질문 3단계 (최종) */}
             <Step name="third">
               <QuestionForm
                 key={"form" + getCurrentStepNumber()}
@@ -188,7 +206,6 @@ export const CreateQuestionTemplate = () => {
                 onClickNext={handleNext}
                 text1="손님들에게 어떻게 기억되고 싶나요?"
                 text2="하는 것은 무엇인가요?"
-                index={4}
                 step={3}
                 buttonText="최종 스토리 등록" // 최종 제출 버튼 텍스트
               />
