@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import useCanvas from "@/hooks/useCanvas";
 
 // 테스트를 위한 더미 데이터 설정
