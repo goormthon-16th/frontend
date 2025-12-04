@@ -4,18 +4,22 @@ import { useState } from "react";
 import useCanvas from "@/hooks/useCanvas";
 
 // 테스트를 위한 더미 데이터 설정
-const IMAGE_URL = "https://picsum.photos/3277/4096"; // 큰 테스트 이미지
+const IMAGE_URL = "https://cdn.pixabay.com/photo/2025/09/12/16/49/dog-9830833_1280.jpg";
 const TEXT_ATTRIBUTES = [
-  // [_, _, _, _, fontSize(40), fontColor('#FFFFFF'), x(1638), y(500)]
-  [0, 0, 0, 0, 40, "#FFFFFF", 1638, 500],
+  [0, 0, 0, 0, 80, "#FFFFFF", 300, 5055, 4800, "left", "bold", 1.0],
+  [0, 0, 0, 0, 32, "#FFFFFF", 300, 5895, 4800, "left", "normal", 1.5],
 ];
+// TODO: 폰트 수정 가능성 있음
 const FONT_FAMILY = "Arial, sans-serif";
 
 function CanvasCreator() {
-  const [title, setTitle] = useState("땡귤베리마치");
+  const [title, setTitle] = useState("제주가 좋아서 게스트 하우스를 차렸다.");
+  const [subtitle, setSubtitle] = useState(
+    "“지친 맘을 치유하러 제주에 왔는데 게스트 하우스에 1주일을 살면서 제주를 힐링이 되었어요 지친 맘을 치유하러 제주에 왔는데 게스트 하우스에 1주일을 살면서 제주를 힐링이 되었어요.”"
+  );
 
   // 1. 필요한 데이터를 준비합니다.
-  const textValues = [title];
+  const textValues = [title, subtitle];
 
   // 2. 훅을 호출하고 필요한 결과물 (캔버스 참조, 데이터 함수)을 받습니다.
   const { canvasRef, getCanvasBlob, getCanvasDataUrl } = useCanvas(
@@ -49,15 +53,6 @@ function CanvasCreator() {
 
   return (
     <div>
-      <div>
-        <label>내용: </label>
-        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
-      </div>
-
-      <div style={{ marginBottom: "20px" }}>
-        <button onClick={handleDownload}>이미지 다운로드</button>
-      </div>
-
       <canvas
         ref={canvasRef}
         style={{
@@ -65,8 +60,11 @@ function CanvasCreator() {
           height: "auto",
           display: "block",
           margin: "0 auto",
+          border: "1px solid #ccc", // 캔버스 영역 확인용
         }}
       />
+
+      <button onClick={handleDownload}>이미지 다운로드</button>
     </div>
   );
 }

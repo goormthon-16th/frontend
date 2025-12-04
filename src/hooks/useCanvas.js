@@ -2,13 +2,56 @@
 
 import { useEffect, useRef } from "react";
 
-// 텍스트 속성 배열의 구조를 정의 (원본 코드 기반)
-// [x, y, width, height, fontSize, fontColor, textAlign, fontFamily]
-
-// 일반화된 Canvas Hook
+// 새로운 텍스트 속성 구조:
+// [0:_, 1:_, 2:_, 3:_, 4:fontSize, 5:fontColor, 6:x, 7:y, 8:maxWidth, 9:textAlign, 10:fontWeight, 11:lineHeightFactor]
 const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
   const canvasRef = useRef(null);
-  // const resetUserInfo = useResetRecoilState(UserInfo); // 제거
+
+  // -------------------------------------------------------------
+  // 텍스트를 주어진 최대 너비(maxWidth)에 맞춰 자동으로 줄 바꿈하고 렌더링하는 함수 (변경 없음)
+  const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
+    if (!text) return;
+
+    const paragraphs = text.split("\n");
+    let currentY = y;
+
+    paragraphs.forEach((paragraph) => {
+      const words = paragraph.split(" ");
+      let line = "";
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + " ";
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+
+        if (testWidth > maxWidth && n > 0) {
+          ctx.fillText(line.trim(), x, currentY);
+          line = words[n] + " ";
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line.trim(), x, currentY);
+      currentY += lineHeight;
+    });
+  };
+  // -------------------------------------------------------------
+
+  // -------------------------------------------------------------
+  // 그라디언트 그리기 함수 (변경 없음)
+  const drawGradientOverlay = (ctx, canvasWidth, canvasHeight) => {
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+    gradient.addColorStop(0.0, "rgba(0, 0, 0, 0.05)");
+    gradient.addColorStop(0.2, "rgba(0, 0, 0, 0.05)");
+    gradient.addColorStop(0.5, "rgba(0, 0, 0, 0.35)");
+    gradient.addColorStop(0.9, "rgba(0, 0, 0, 0.85)");
+    gradient.addColorStop(1.0, "rgba(0, 0, 0, 0.95)");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  };
+  // -------------------------------------------------------------
 
   useEffect(() => {
     if (!imageUrl || textAttributes.length === 0) return;
@@ -19,37 +62,88 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
     if (!ctx) return;
 
     const drawCanvas = () => {
-      // 캔버스 크기는 고정 (원본 코드 유지)
-      canvas.width = 3277;
-      canvas.height = 4096;
+      // 캔버스 크기 설정 (고정)
+      const canvasWidth = 5400;
+      const canvasHeight = 6795;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
 
       const img = new Image();
-      img.crossOrigin = "Anonymous"; // CORS 문제 방지를 위해 추가
+      img.crossOrigin = "Anonymous";
       img.src = imageUrl;
 
       img.onload = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
+        // 1. 이미지 중앙 크롭 로직 (변경 없음)
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+        const canvasRatio = canvasWidth / canvasHeight;
+        const imageRatio = imgWidth / imgHeight;
+
+        let sourceX = 0;
+        let sourceY = 0;
+        let sourceWidth = imgWidth;
+        let sourceHeight = imgHeight;
+
+        if (imageRatio > canvasRatio) {
+          sourceHeight = imgHeight;
+          sourceWidth = imgHeight * canvasRatio;
+          sourceX = (imgWidth - sourceWidth) / 2;
+        } else {
+          sourceWidth = imgWidth;
+          sourceHeight = imgWidth / canvasRatio;
+          sourceY = (imgHeight - sourceHeight) / 2;
+        }
+
+        ctx.drawImage(
+          img,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          0,
+          0,
+          canvasWidth,
+          canvasHeight
+        );
+
+        // 2. 그라디언트 오버레이 추가 (변경 없음)
+        drawGradientOverlay(ctx, canvasWidth, canvasHeight);
+
+        // 3. 텍스트 렌더링
         textAttributes.forEach((textAttr, index) => {
-          // 원본 코드의 구조 분해를 인자 배열 구조에 맞게 일반화
-          // [0:_, 1:_, 2:_, 3:_, 4:fontSize, 5:fontColor, 6:x, 7:y]
-          // Note: 원본 배열 구조와 인덱스가 다를 경우 이 부분을 수정해야 합니다.
-          const [, , , , fontSize, fontColor, x, y] = textAttr;
+          // [0:_, 1:_, 2:_, 3:_, 4:fontSize, 5:fontColor, 6:x, 7:y, 8:maxWidth, 9:textAlign, 10:fontWeight, 11:lineHeightFactor]
+          // ✨ 11번째 인덱스에 lineHeightFactor 추가
+          const [
+            ,
+            ,
+            ,
+            ,
+            fontSize,
+            fontColor,
+            x,
+            y,
+            maxWidth,
+            textAlign,
+            fontWeight,
+            lineHeightFactor,
+          ] = textAttr;
 
-          // 폰트와 스타일을 외부 인자로 받은 값과 텍스트 속성을 사용하여 설정
-          ctx.font = `${fontSize * 10}px ${fontFamily}`;
-          ctx.textAlign = "center";
+          // 폰트 스타일 설정
+          const actualFontSize = fontSize * 5;
+
+          // ✨ 줄 간격 계산 로직 수정: 제공된 factor를 사용하고, 없을 경우 1.2를 기본값으로 사용
+          const factor = parseFloat(lineHeightFactor) || 1.2;
+          const lineHeight = actualFontSize * factor;
+
+          ctx.font = `${fontWeight} ${actualFontSize}px ${fontFamily}`;
+          ctx.textAlign = textAlign || "left";
           ctx.fillStyle = fontColor;
 
           const text = textValues[index] || "";
-          const lines = text.split("\n");
-          const lineHeight = fontSize * 12;
 
-          lines.forEach((line, i) => {
-            // x, y는 textAttr에서 가져옵니다.
-            ctx.fillText(line, x, y + i * lineHeight);
-          });
+          wrapText(ctx, text, x, y, maxWidth, lineHeight);
         });
       };
 
@@ -59,18 +153,11 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
     };
 
     drawCanvas();
-  }, [imageUrl, textValues, textAttributes, fontFamily]); // 의존성 배열 업데이트
+  }, [imageUrl, textValues, textAttributes, fontFamily]);
 
   // -------------------------------------------------------------------
-  // 서버 통신 부분 일반화:
-  // 로컬 `privateAxios`나 `resetUserInfo`를 사용할 수 없으므로,
-  // 캔버스 이미지를 반환하는 로직만 남기거나, 외부 함수를 인자로 받도록 수정합니다.
-  // 여기서는 순수하게 캔버스 데이터를 다루는 함수만 유지하고 통신 로직은 제거합니다.
-
-  /**
-   * 캔버스 이미지를 PNG 형식의 Blob으로 변환하여 반환합니다.
-   * 이 Blob을 사용하여 외부에서 서버로 업로드를 처리할 수 있습니다.
-   */
+  // ... (Blob, Data URL 반환 함수는 변경 없음)
+  // -------------------------------------------------------------------
   const getCanvasBlob = () => {
     const canvas = canvasRef.current;
     if (!canvas) return Promise.reject(new Error("Canvas 참조가 없습니다."));
@@ -86,17 +173,12 @@ const useCanvas = (imageUrl, textValues, textAttributes, fontFamily) => {
     });
   };
 
-  /**
-   * 캔버스 이미지를 base64 Data URL 문자열로 반환합니다.
-   */
   const getCanvasDataUrl = () => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
 
     return canvas.toDataURL("image/png");
   };
-
-  // 원본 코드의 `uploadImage` 함수는 로컬 파일 업로드 통신 로직이므로 제거합니다.
 
   return { canvasRef, getCanvasBlob, getCanvasDataUrl };
 };
