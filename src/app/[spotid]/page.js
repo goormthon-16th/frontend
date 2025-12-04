@@ -1,20 +1,25 @@
+import BottomButton from "@/components/detail/BottomButton";
 import PostBlock from "@/components/detail/PostBlock";
 import mockPost from "@/components/detail/mockPost";
-import { Badge, Flex, HStack, VStack } from "@vapor-ui/core";
+import { Badge, HStack, VStack } from "@vapor-ui/core";
 
 export default function Page() {
   return (
-    <VStack margin="$200">
-      <HStack gap="$100">
-        {["감성", "이주민", "귤칵테일"].map((tag) => {
-          return <Badge key={tag}>{tag}</Badge>;
-        })}
-      </HStack>
+    <VStack margin="$200" marginBottom="100px">
       {mockPost.title.map((titleText, index) => {
         const contentText = mockPost.content[index];
 
-        return <PostBlock key={index} title={titleText} content={contentText} />;
+        return (
+          <div key={index}>
+            <PostBlock title={titleText} content={contentText} isFirst={index == 0} />
+          </div>
+        );
       })}
+
+      {/* TODO: color 수정 필요 */}
+      <div style={{ border: "1px solid lightgray" }} />
+
+      <BottomButton />
     </VStack>
   );
 }
