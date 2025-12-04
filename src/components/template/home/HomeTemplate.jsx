@@ -2,12 +2,12 @@
 
 import MainSwiper from "@/components/MainSwiper";
 import SpotSwiper from "@/components/SpotSwiper";
-import { HStack, IconButton, Text, VStack } from "@vapor-ui/core";
+import { Button, Flex, HStack, IconButton, Text, VStack } from "@vapor-ui/core";
 import React from "react";
 
 export const HomeTemplate = () => {
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <MainSwiper />
       <HStack padding={"20px 24px 10px 24px"}>
         <VStack justifyContent="center">
@@ -39,6 +39,19 @@ export const HomeTemplate = () => {
         </VStack>
       </HStack>
       <SpotSwiper />
+
+      <Button
+        size="lg"
+        width="calc(100% - 40px)"
+        color="white"
+        backgroundColor="$primary-200"
+        height="48px"
+        marginTop={"auto"}
+        marginBottom="20px"
+        marginX="20px"
+      >
+        내 홍보물 만들기
+      </Button>
     </div>
   );
 };
