@@ -1,7 +1,5 @@
-// import { CreateQuestionTemplate } from "@/components/template/create/question/CreateQuestionTemplate";
-import { QuestionForm } from "@/components/template/create/question/QuestionForm";
+import { CreateQuestionTemplate } from "@/components/template/create/question/CreateQuestionTemplate";
 
 export default function Page() {
-  // return <CreateQuestionTemplate />;
-  return <QuestionForm />;
+  return <CreateQuestionTemplate />;
 }

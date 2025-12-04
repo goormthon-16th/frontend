@@ -1,16 +1,19 @@
 "use client";
+
 import React, { useState } from "react";
 import { Funnel, Step, useFunnel } from "@/components/Funnel";
+import { Flex, Text, VStack } from "@vapor-ui/core";
+import { QuestionForm } from "./QuestionForm";
 
 // 질문 생성 단계 정의 📝
-const STEPS = ["question", "answer", "preview"];
+const STEPS = ["first", "second", "third"];
 
 export const CreateQuestionTemplate = () => {
   // Funnel 훅 사용 - 단계 관리 🎣
-  const [FunnelComponent, setStep] = useFunnel(STEPS, "question");
+  const [FunnelComponent, setStep] = useFunnel(STEPS, "first");
 
   // 현재 단계 추적을 위한 상태 (예시용) 📊
-  const [currentStep, setCurrentStep] = useState("question");
+  const [currentStep, setCurrentStep] = useState("first");
 
   // 다음 단계로 이동하는 핸들러 ⏭️
   const handleNext = () => {
@@ -33,74 +36,20 @@ export const CreateQuestionTemplate = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Funnel 컴포넌트로 단계별 렌더링 🎯 */}
+    <Flex>
       <FunnelComponent>
-        <Step name="question">
-          <div className="p-4 border rounded">
-            <h2 className="text-xl font-bold mb-4">질문 입력</h2>
-            <input
-              type="text"
-              placeholder="질문을 입력하세요"
-              className="w-full p-2 border rounded"
-            />
-            <button
-              onClick={handleNext}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-            >
-              다음
-            </button>
-          </div>
+        <Step name="first">
+          <QuestionForm onClickPrev={handlePrev} onClickNext={handleNext} text="첫번째질문입니다" />
         </Step>
 
-        <Step name="answer">
-          <div className="p-4 border rounded">
-            <h2 className="text-xl font-bold mb-4">답변 입력</h2>
-            <textarea
-              placeholder="답변을 입력하세요"
-              className="w-full p-2 border rounded"
-              rows={4}
-            />
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={handlePrev}
-                className="px-4 py-2 bg-gray-500 text-white rounded"
-              >
-                이전
-              </button>
-              <button
-                onClick={handleNext}
-                className="px-4 py-2 bg-blue-500 text-white rounded"
-              >
-                다음
-              </button>
-            </div>
-          </div>
+        <Step name="second">
+          <QuestionForm onClickPrev={handlePrev} onClickNext={handleNext} text="두번째질문입니다" />
         </Step>
 
-        <Step name="preview">
-          <div className="p-4 border rounded">
-            <h2 className="text-xl font-bold mb-4">미리보기</h2>
-            <div className="space-y-2">
-              <p className="text-gray-600">질문과 답변을 확인하세요</p>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={handlePrev}
-                className="px-4 py-2 bg-gray-500 text-white rounded"
-              >
-                이전
-              </button>
-              <button
-                onClick={() => alert("저장되었습니다!")}
-                className="px-4 py-2 bg-green-500 text-white rounded"
-              >
-                저장
-              </button>
-            </div>
-          </div>
+        <Step name="third">
+          <QuestionForm onClickPrev={handlePrev} onClickNext={handleNext} text="세번째질문입니다" />
         </Step>
       </FunnelComponent>
-    </div>
+    </Flex>
   );
 };
