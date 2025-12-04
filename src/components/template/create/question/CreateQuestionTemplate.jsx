@@ -51,7 +51,8 @@ export const CreateQuestionTemplate = () => {
             <QuestionForm
               onClickPrev={handlePrev}
               onClickNext={handleNext}
-              text="첫번째질문입니다"
+              text1="어떤 계기나 이유로"
+              text2="제주도에서 가게를 시작하셨나요?"
             />
           </Step>
 
@@ -59,7 +60,8 @@ export const CreateQuestionTemplate = () => {
             <QuestionForm
               onClickPrev={handlePrev}
               onClickNext={handleNext}
-              text="두번째질문입니다"
+              text1="제주도에서 가게를 운영하면서"
+              text2="좋았던 기억을 공유해주세요."
             />
           </Step>
 
@@ -67,7 +69,8 @@ export const CreateQuestionTemplate = () => {
             <QuestionForm
               onClickPrev={handlePrev}
               onClickNext={handleNext}
-              text="세번째질문입니다"
+              text1="손님들에게 어떻게 기억되고 싶나요?"
+              text2="하는 것은 무엇인가요?"
             />
           </Step>
         </FunnelComponent>
