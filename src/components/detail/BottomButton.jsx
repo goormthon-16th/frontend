@@ -16,10 +16,20 @@ const BottomButton = () => {
         justifyContent: "space-between",
       }}
     >
-      <Button width="50%" stretch="true" size="xl" variant="outline" flex={1}>
+      <Button
+        width="50%"
+        height="48px"
+        color="black"
+        backgroundColor="$gray-100"
+      >
         뒤로 가기
       </Button>
-      <Button width="50%" stretch="true" size="xl" flex={1}>
+      <Button
+        width="50%"
+        color="white"
+        backgroundColor="$primary-200"
+        height="48px"
+      >
         내 콘텐츠 만들기
       </Button>
     </Flex>
