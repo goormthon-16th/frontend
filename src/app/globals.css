@@ -6,6 +6,10 @@ body {
   margin: 0;
 }
 
+.custom-swiper-pagination .swiper-pagination-bullet-active {
+  background: #fc7302 !important;
+}
+
 :root,
 [data-vapor-theme="light"] {
   --vapor-color-canvas: #ffffff;
