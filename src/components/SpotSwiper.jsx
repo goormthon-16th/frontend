@@ -11,21 +11,21 @@ const cardData = [
     title: "김씨네 칵테일바",
     tags: ["감성", "이주민", "귤 칵테일"],
     imgUrl:
-      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=600&q=80",
+      "https://menu.moneys.co.kr/moneyweek/thumb/2014/05/20/06/2014052017098044203_1.jpg/dims/optimize/",
   },
   {
     id: 2,
     title: "제주 로컬 카페",
     tags: ["로컬", "디저트", "바다뷰"],
     imgUrl:
-      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=600&q=80",
+      "https://mblogthumb-phinf.pstatic.net/MjAyNTAyMDZfMjkz/MDAxNzM4ODQ0NDUwNjgx.dEF-cc3oUN7cim-FeOtaahSI3p2sJ5Go6g3ePZ-v1Lkg.oJZF-oWoFrjyV7NMZbUGooPuePkpLJ3SY62T7C6OVOkg.JPEG/image.JPEG?type=w800",
   },
   {
     id: 3,
     title: "골목 포차",
     tags: ["야간", "분위기", "소규모"],
     imgUrl:
-      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=600&q=80",
+      "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1024,w_1024/9f0fabab-7a06-45a0-96ff-62f80f2c7b3e.jpeg",
   },
 ];
 
@@ -33,10 +33,13 @@ const styles = {
   wrapper: {
     width: "100%",
     boxSizing: "border-box",
+    padding: "20px 24px", // 🎨 그림자를 위한 상하 여백 + 좌우 여백
+    overflow: "hidden", // 🚫 부모 밖으로 넘치는 것 방지
   },
   swiper: {
-    padding: "0 24px", // 양 옆 여백
-    overflow: "visible",
+    overflow: "visible", // ✨ 그림자가 잘리지 않도록 visible 설정
+    margin: "0 -24px", // 🔄 wrapper의 좌우 padding을 상쇄하여 슬라이드가 화면 끝까지 가도록
+    padding: "0 24px", // 📏 실제 슬라이드 시작 위치 조정
   },
   slide: {
     width: "340px", // 카드 한 장 너비 (slidesPerView: "auto"라서 직접 지정)

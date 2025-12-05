@@ -6,6 +6,7 @@ export const ROUTE_TITLES = {
   "/spot/create/info": "게시글 입력",
   "/spot/create/question": "게시글 입력",
   "/spot/create": "게시글 입력",
+  "/sns": "SNS용 홍보물 미리보기",
 };
 
 /**

@@ -1,6 +1,11 @@
 import { Flex, Button } from "@vapor-ui/core";
+import { useRouter } from "next/navigation";
 
 const BottomButton = () => {
+  const router = useRouter();
+  const handleOnClick = () => {
+    router.push("/sns");
+  };
   return (
     <Flex
       style={{
@@ -17,20 +22,13 @@ const BottomButton = () => {
       }}
     >
       <Button
-        width="50%"
-        height="48px"
-        color="black"
-        backgroundColor="$gray-100"
-      >
-        뒤로 가기
-      </Button>
-      <Button
-        width="50%"
+        width="100%"
         color="white"
         backgroundColor="$primary-200"
         height="48px"
+        onClick={handleOnClick}
       >
-        내 콘텐츠 만들기
+        SNS용 홍보물 미리보기
       </Button>
     </Flex>
   );

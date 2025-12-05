@@ -6,6 +6,7 @@ import { Navigation } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/navigation";
+import { Text } from "@vapor-ui/core";
 
 const slides = [
   {
@@ -33,7 +34,7 @@ const styles = {
     width: "100%",
     maxWidth: "480px", // 모바일 카드 느낌
     margin: "0 auto",
-    height: "485px", // 화면 꽉 채우기 (원하면 520px 등으로 조정)
+    height: "463px", // 화면 꽉 채우기 (원하면 520px 등으로 조정)
     backgroundColor: "#e5e5e5",
     display: "flex",
     alignItems: "center",
@@ -72,6 +73,10 @@ const styles = {
     lineHeight: 1.4,
     textAlign: "right",
     whiteSpace: "pre-line",
+    fontFamily: "KCC Sonkeechung",
+    fontSize: "20px",
+    fontWeight: "600",
+    color: "white",
   },
   title: {
     fontSize: "30px",
@@ -82,6 +87,12 @@ const styles = {
     fontSize: "16px",
     lineHeight: 1.6,
     whiteSpace: "pre-line",
+
+    fontFamily: "KCC Sonkeechung",
+    fontSize: "24px",
+    fontWeight: "400",
+    color: "white",
+    marginTop: "14px",
   },
   bottomArea: {
     display: "flex",
@@ -130,8 +141,19 @@ export default function MainSwiper() {
             <div style={styles.overlay}>
               <div style={styles.topRightLogo}>{"탐나는\n사장님"}</div>
 
-              <div>
-                <div style={styles.title}>{s.title}</div>
+              <div style={{ marginTop: "170px" }}>
+                <Text
+                  style={{
+                    fontFamily: "KCC Sonkeechung",
+                    fontSize: "48px",
+                    fontWeight: "600",
+                    marginTop: "100px",
+                    color: "white",
+                  }}
+                >
+                  {s.title}
+                </Text>
+
                 <div style={styles.subtitle}>{s.subtitle}</div>
               </div>
 

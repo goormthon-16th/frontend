@@ -1,6 +1,13 @@
+/* 🎨 커스텀 폰트 import */
+@import "../styles/font.css";
+
 body {
   background-color: #f0f0f0;
   margin: 0;
+}
+
+.custom-swiper-pagination .swiper-pagination-bullet-active {
+  background: #fc7302 !important;
 }
 
 :root,
