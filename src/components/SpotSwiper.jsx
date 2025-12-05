@@ -33,10 +33,13 @@ const styles = {
   wrapper: {
     width: "100%",
     boxSizing: "border-box",
+    padding: "20px 24px", // 🎨 그림자를 위한 상하 여백 + 좌우 여백
+    overflow: "hidden", // 🚫 부모 밖으로 넘치는 것 방지
   },
   swiper: {
-    padding: "0 24px", // 양 옆 여백
-    overflow: "visible",
+    overflow: "visible", // ✨ 그림자가 잘리지 않도록 visible 설정
+    margin: "0 -24px", // 🔄 wrapper의 좌우 padding을 상쇄하여 슬라이드가 화면 끝까지 가도록
+    padding: "0 24px", // 📏 실제 슬라이드 시작 위치 조정
   },
   slide: {
     width: "340px", // 카드 한 장 너비 (slidesPerView: "auto"라서 직접 지정)
