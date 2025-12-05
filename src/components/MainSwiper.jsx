@@ -12,19 +12,19 @@ const slides = [
     id: 1,
     title: "홍보 고민되시나요?",
     subtitle: `"사장님만의 이야기"를\n제가 따뜻하게 녹여드릴게요`,
-    img: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=80",
+    img: "https://images.unsplash.com/photo-1518562593247-cc26c241becd?q=80&w=1066&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: 2,
     title: "걱정마세요!",
     subtitle: `"사장님의 이야기를\n제가 대신 홍보해드릴게요`,
-    img: "https://images.unsplash.com/photo-1588167865096-71c620227d92?auto=format&fit=crop&w=900&q=80",
+    img: "https://images.unsplash.com/photo-1683669639055-83621f1bc1ff?q=80&w=927&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: 3,
     title: "질문 3개로 손쉽게.",
     subtitle: `"사장님 가게의 진짜 매력"을\n제가 대신 알려드릴게요`,
-    img: "https://images.unsplash.com/photo-1530982011887-3cc11cc85693?auto=format&fit=crop&w=900&q=80",
+    img: "https://images.unsplash.com/photo-1688545134131-060868a3c306?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
 ];
 
