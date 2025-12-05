@@ -73,9 +73,7 @@ export const HomeTemplate = () => {
       </HStack>
 
       {/* ★★★ SpotSwiper 대신 로딩/데이터/에러 콘텐츠 출력 ★★★ */}
-      <Flex direction="column" flexGrow={1}>
-        {content}
-      </Flex>
+      <Flex direction="column">{content}</Flex>
 
       <Button
         size="lg"
