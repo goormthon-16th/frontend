@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MobileContainer } from "@/components/MobileLayout";
+import { SpotCreateProvider } from "@/contexts/SpotCreateContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +24,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <MobileContainer>{children}</MobileContainer>
+        <SpotCreateProvider>
+          <MobileContainer>{children}</MobileContainer>
+        </SpotCreateProvider>
       </body>
     </html>
   );
